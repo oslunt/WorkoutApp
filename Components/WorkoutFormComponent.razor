@@ -1,0 +1,97 @@
+﻿@inherits OwningComponentBase<IWorkoutRepository>
+@inject NavigationManager NavigationManager
+
+<div class="modal @ModalClass" tabindex="-1" role="dialog" style="display:@ModalDisplay">
+    <div class="modal-dialog" role="document">
+        <EditForm Model="w" OnValidSubmit="AddWorkout">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add a Workout</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" @onclick="() => Close()">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <DataAnnotationsValidator></DataAnnotationsValidator>
+                    <div class="form-group">
+                        <label>Workout</label>
+                        <InputText @bind-Value="@w.Name" class="form-control"></InputText>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Day</label>
+                        <select class="form-control" @onchange="UpdateDay">
+                            @foreach(var day in Days)
+                            {
+                            <option value="@day.DayID">@day.Name</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary" @onclick="() => Close()">Add</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" @onclick="() => Close()">Close</button>
+                </div>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+
+@if (ShowBackdrop)
+{
+    <div class="modal-backdrop fade show"></div>
+}
+
+
+@code {
+
+    public Workout w { get; set; } = new Workout();
+    public string ModalDisplay = "none;";
+    public string AddWorkoutDisplay = "none";
+    public string ModalClass = "";
+    public bool ShowBackdrop = false;
+
+    public bool addWorkout = false;
+
+    public IWorkoutRepository repo => Service;
+
+    public IEnumerable<Day> Days { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Days = repo.Days.ToList();
+    }
+
+    public void Open()
+    {
+        ModalDisplay = "block;";
+        ModalClass = "Show";
+        ShowBackdrop = true;
+        StateHasChanged();
+    }
+
+    public void Close()
+    {
+        ModalDisplay = "none";
+        ModalClass = "";
+        ShowBackdrop = false;
+        StateHasChanged();
+    }
+
+    public void UpdateDay(ChangeEventArgs args)
+    {
+        int dayid = Convert.ToInt32(args.Value);
+        w.Day = repo.Days.First(d => d.DayID == dayid);
+        w.DayID = w.Day.DayID;
+        AddWorkoutDisplay = "none";
+
+    }
+
+    public void AddWorkout()
+    {
+        repo.AddWorkout(w);
+        int id = repo.Workouts.Max(w => w.WorkoutID);
+        NavigationManager.NavigateTo($"/workouts/edit/{id}");
+    }
+}

@@ -1,0 +1,65 @@
+﻿@page "/workouts"
+@inherits OwningComponentBase<IWorkoutRepository>
+
+<CascadingValue Value="this">
+    <WorkoutFormComponent @ref="Modal"></WorkoutFormComponent>
+</CascadingValue>
+
+<div class="container">
+    <table class="table table-bordered table-striped table-hover">
+
+        <thead>
+            <tr>
+                <td class="font-weight-bold"><h4>Workout</h4></td>
+            </tr>
+        </thead>
+
+        <tbody>
+            @if (WorkoutData?.Count() > 0)
+            {
+                @foreach (Workout w in WorkoutData)
+                {
+                    <tr>
+                        <td>
+                            <NavLink href="@GetExercisesUrl(w.WorkoutID)">
+                                @w.Name
+                            </NavLink>
+                        </td>
+                    </tr>
+                }
+
+            }
+            else
+            {
+                <tr>
+                    <td>No workouts</td>
+                </tr>
+            }
+
+        </tbody>
+
+    </table>
+    <button class="btn btn-warning" @onclick="() => Modal.Open()">Add Workout</button>
+</div>
+
+
+@code {
+
+    public IWorkoutRepository repo => Service;
+    public IEnumerable<Workout> WorkoutData { get; set; }
+
+    private WorkoutFormComponent Modal { get; set; }
+
+    protected async override Task OnInitializedAsync()
+    {
+        await UpdateData();
+    }
+
+    public async Task UpdateData()
+    {
+        WorkoutData = await repo.Workouts.ToListAsync();
+    }
+
+    public string GetExercisesUrl(long id) => $"/workouts/exercises/{id}";
+
+}

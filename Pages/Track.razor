@@ -1,0 +1,193 @@
+﻿@page "/workouts/{id:long}/track"
+@inherits OwningComponentBase<IWorkoutRepository>
+@inject NavigationManager NavigationManager
+
+<div class="container">
+    <table class="table table-bordered table-hover" ondragover="event.preventDefault();">
+        <thead>
+            <tr>
+                <td class="col-1"></td>
+                <td>
+                    <p>
+                        <span class="font-weight-bold h3">@workout.Name</span>
+                    </p>
+                </td>
+                @if (Stat_Data?.Count() > 0)
+                {
+                    <span style="vertical-align: central;">Stats from: <h5 style="font-weight: bold; vertical-align: central;">@Stat_Data[0].Date.Date.ToShortDateString()</h5></span> 
+                }
+            </tr>
+        </thead>
+
+        <tbody>
+            @if (Workout_ExerciseData?.Count() > 0)
+            {
+                @foreach (var we in Workout_ExerciseData)
+                {
+                    <tr style="white-space: nowrap;">
+                        <td>@we.ExerciseNum</td>
+
+                        @if (we.Eccentric)
+                        {
+                            <td style="width: 25%;">
+                                Eccentric @we.Exercise.Name
+                            </td>
+                        }
+                        else
+                        {
+                            <td style="width: 25%;">@we.Exercise.Name</td>
+                        }
+                        @if (Stat_Data?.Count() > 0)
+                        {
+                            @foreach (var paststats in Stat_Data)
+                            {
+                                @if (paststats.WorkoutExerciseID == we.WorkoutExerciseID)
+                                {
+                                    @if (paststats.Reps != 0)
+                                    {
+                                        <td style="width: 7%;">@paststats.Reps</td>
+                                    }
+                                    else
+                                    {
+                                        <td style="width: 7%;">-</td>
+                                    }
+                                    @if (paststats.Weight != 0)
+                                    {
+                                        <td style="width: 7%;">@paststats.Weight lb</td>
+                                    }
+                                    else
+                                    {
+                                        <td style="width: 7%;">- lb</td>
+                                    }
+                                    @if (paststats.Time != 0)
+                                    {
+                                        <td style="width: 7%;">@paststats.Time sec </td>
+                                    }
+                                    else
+                                    {
+                                        <td style="width: 7%;">- sec</td>
+                                    }
+                                }
+
+                            }
+
+                            @foreach (var stats in toSaveStats)
+                            {
+                                @if (stats.WorkoutExerciseID == we.WorkoutExerciseID)
+                                {
+                                    <div>
+                                        <EditForm Model="@stats" OnValidSubmit="SaveStat">
+                                            <td class="text-center"><InputNumber @bind-Value="@stats.Reps" style="width: 70px;" class="form-control"></InputNumber></td>
+                                            <td class="text-center"><div class="input-group" style="white-space: nowrap;"><InputNumber @bind-Value="@stats.Weight" class="form-control"></InputNumber><div class="input-group-append"><div class="input-group-text">lb</div></div></div></td>
+                                            <td class="text-center"><div class="input-group" style="white-space: nowrap;"><InputNumber @bind-Value="@stats.Time" class="form-control"></InputNumber><div class="input-group-append"><div class="input-group-text">sec</div></div></div></td>
+                                        </EditForm>
+                                    </div>
+                                }
+                            }
+                        }
+                        else
+                        {
+                            <td style="width: 7%;">-</td>
+                            <td style="width: 7%;">- lb</td>
+                            <td style="width: 7%;">- sec</td>
+                            @foreach (var stats in toSaveStats)
+                            {
+                                @if (stats.WorkoutExerciseID == we.WorkoutExerciseID)
+                                {
+                                    <div>
+                                        <EditForm Model="@stats" OnValidSubmit="SaveStat">
+                                            <td class="text-center"><InputNumber @bind-Value="@stats.Reps" style="width: 70px;" class="form-control"></InputNumber></td>
+                                            <td class="text-center"><div class="input-group" style="white-space: nowrap;"><InputNumber @bind-Value="@stats.Weight" class="form-control"></InputNumber><div class="input-group-append"><div class="input-group-text">lb</div></div></div></td>
+                                            <td class="text-center"><div class="input-group" style="white-space: nowrap;"><InputNumber @bind-Value="@stats.Time" class="form-control"></InputNumber><div class="input-group-append"><div class="input-group-text">sec</div></div></div></td>
+                                        </EditForm>
+                                    </div>
+                                }
+                            }
+                        }
+
+
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr><td></td><td>Loading data or no data</td></tr>
+            }
+        </tbody>
+    </table>
+    <NavLink class="btn btn-success" href="@GetExercisesUrl(Id)" @onclick="SaveStats">Save</NavLink>
+    <NavLink class="btn btn-primary float-right" href="@GetExercisesUrl(Id)">Back</NavLink>
+    <br /><br />
+</div>
+
+@code {
+
+    [Inject]
+    public IWorkoutRepository repo { get; set; }
+
+    [Parameter]
+    public long Id { get; set; }
+
+    public List<Workout_Exercise> Workout_ExerciseData { get; set; }
+
+    public List<Stat> Stat_Data { get; set; }
+
+    public DateTime Stat_Data_Date { get; set; }
+
+    public int curIndex;
+
+    public Workout workout { get; set; }
+
+    public Stat s { get; set; }
+
+    public List<Stat> toSaveStats { get; set; } = new List<Stat>();
+
+    protected async override Task OnInitializedAsync()
+    {
+        workout = repo.Workouts.First(w => w.WorkoutID == Id);
+        await UpdateData();
+    }
+
+    public async Task UpdateData()
+    {
+        Workout_ExerciseData = await repo.Workout_Exercises
+                    .Include(e => e.Exercise)
+                    .Where(we => we.WorkoutID == Id)
+                    .OrderBy(we => we.ExerciseNum)
+                    .ToListAsync();
+        foreach(Workout_Exercise we in Workout_ExerciseData)
+        {
+            s = new Stat();
+            s.Workout_Exercise = we;
+            s.WorkoutExerciseID = s.Workout_Exercise.WorkoutExerciseID;
+            toSaveStats.Add(s);
+        }
+        if(repo.Stats.Where(s => s.Workout_Exercise.WorkoutID == Id).Any())
+        {
+            Stat_Data_Date = await repo.Stats
+                        .Where(s => s.Workout_Exercise.WorkoutID == Id)
+                        .MaxAsync(s => s.Date);
+            Stat_Data = await repo.Stats
+                        .Where(s => s.Workout_Exercise.WorkoutID == Id)
+                        .Where(s => s.Date == Stat_Data_Date)
+                        .ToListAsync();
+        }
+
+    }
+
+    public string GetExercisesUrl(long id) => $"/workouts/exercises/{id}";
+
+    public void SaveStats()
+    {
+        foreach(Stat stats in toSaveStats)
+        {
+            stats.Date = DateTime.Now.Date;
+            repo.SaveStats(stats);
+        }
+    }
+
+    public void SaveStat()
+    {
+
+    }
+}

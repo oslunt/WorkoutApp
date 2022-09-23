@@ -1,0 +1,131 @@
+﻿@inherits OwningComponentBase<IWorkoutRepository>
+
+<div class="modal @ModalClass" tabindex="-1" role="dialog" style="display:@ModalDisplay">
+    <div class="modal-dialog" role="document">
+        <EditForm Model="we" OnValidSubmit="AddWorkoutExercise">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add a Exercise</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" @onclick="() => Close()">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <DataAnnotationsValidator></DataAnnotationsValidator>
+                    <div class="form-group">
+                        <label>Exercise</label>
+                        <select class="form-control" @onchange="UpdateExercise">
+                            <option value="">Choose an Exercise or Add your own</option>
+                            <option value="addyourown">Add Exercise</option>
+                            @foreach(var exName in Exercises)
+                            {
+                                <option value="@exName.Name">@exName.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <form style="display:@AddExerciseDisplay">
+                        <div class="form-group">
+                            <label>Exercise Name</label>
+                            <input class="form-control" @bind-value="@e.Name" />
+                        </div>
+                    </form>
+                    <div class="form-group">
+                        <label>Eccentric</label>
+                        <InputCheckbox @bind-Value="@we.Eccentric"></InputCheckbox>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary" @onclick="() => Close()">Add</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" @onclick="() => Close()">Close</button>
+                </div>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+
+@if (ShowBackdrop)
+{
+    <div class="modal-backdrop fade show"></div>
+}
+
+
+@code {
+
+    [Parameter]
+    public long Id { get; set; }
+
+    [CascadingParameter]
+    public Edit? Edit { get; set; }
+
+    public Workout_Exercise we { get; set; } = new Workout_Exercise();
+    public string ModalDisplay = "none;";
+    public string AddExerciseDisplay = "none";
+    public string ModalClass = "";
+    public bool ShowBackdrop = false;
+
+    public bool addExercise = false;
+
+    public Exercise e { get; set; } = new Exercise();
+
+    public IWorkoutRepository repo => Service;
+
+    public IEnumerable<Exercise> Exercises { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Exercises = repo.Exercises.OrderBy(e => e.Name);
+    }
+
+    public void Open()
+    {
+        ModalDisplay = "block;";
+        ModalClass = "Show";
+        ShowBackdrop = true;
+        StateHasChanged();
+    }
+
+    public void Close()
+    {
+        ModalDisplay = "none";
+        ModalClass = "";
+        ShowBackdrop = false;
+        StateHasChanged();
+    }
+
+    public void UpdateExercise(ChangeEventArgs args)
+    {
+        string ex = args.Value.ToString();
+        if(ex == "addyourown")
+        {
+            AddExerciseDisplay = "block";
+            addExercise = true;
+        }
+        else
+        {
+            we.Exercise = repo.Exercises.First(e => e.Name == ex);
+            we.ExerciseID = we.Exercise.ExerciseID;
+            AddExerciseDisplay = "none";
+            addExercise = false;
+        }
+    }
+
+    public void AddWorkoutExercise()
+    {
+        if(addExercise)
+        {
+            if(repo.Exercises.Any(we => we.Name == e.Name) == false)
+            {
+                repo.AddExercise(e);
+            }
+
+            we.Exercise = repo.Exercises.First(we => we.Name == e.Name);
+            we.ExerciseID = we.Exercise.ExerciseID;
+        }
+        we.Workout = repo.Workouts.First(w => w.WorkoutID == Id);
+        we.WorkoutID = we.Workout.WorkoutID;
+        we.ExerciseNum = repo.Workout_Exercises.Where(we => we.WorkoutID == Id).Max(we => we.ExerciseNum) + 1;
+        repo.AddWorkoutExercises(we);
+        Edit.RefreshState();
+    }
+}

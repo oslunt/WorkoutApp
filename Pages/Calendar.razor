@@ -1,0 +1,196 @@
+﻿@page "/calendar"
+@inherits OwningComponentBase<IWorkoutRepository>
+
+<div class="container" style="height: 100%;">
+
+    @* @if (month > 0 && year > 0)
+        {
+            <h3 class="text-center">
+                @if (month == 1)
+                {
+                    <span>January</span>
+                }
+                else if (month == 2)
+                {
+                    <span>February</span>
+                }
+                else if (month == 3)
+                {
+                    <span>March</span>
+                }
+                else if (month == 4)
+                {
+                    <span>April</span>
+                }
+                else if (month == 5)
+                {
+                    <span>May</span>
+                }
+                else if (month == 6)
+                {
+                    <span>June</span>
+                }
+                else if (month == 7)
+                {
+                    <span>July</span>
+                }
+                else if (month == 8)
+                {
+                    <span>August</span>
+                }
+                else if (month == 9)
+                {
+                    <span>September</span>
+                }
+                else if (month == 10)
+                {
+                    <span>October</span>
+                }
+                else if (month == 11)
+                {
+                    <span>November</span>
+                }
+                else if (month == 12)
+                {
+                    <span>December</span>
+                }
+                @year
+            </h3>
+        }
+        else
+        {
+            <h3>Loading...</h3>
+        }
+
+        <div class="row border">
+            <div class="col border"><span class="font-weight-bold h4">Sunday</span></div>
+            <div class="col border"><span class="font-weight-bold h4">Monday</span></div>
+            <div class="col border"><span class="font-weight-bold h4">Tuesday</span></div>
+            <div class="col border"><span class="font-weight-bold h4">Wednesday</span></div>
+            <div class="col border"><span class="font-weight-bold h4">Thursday</span></div>
+            <div class="col border"><span class="font-weight-bold h4">Friday</span></div>
+            <div class="col border"><span class="font-weight-bold h4">Saturday</span></div>
+        </div>
+
+        @if (numDays > 0)
+        {
+            @if (startday == "Sunday")
+            {
+                @while (counter <= numDays)
+                {
+                    @if (counter % 7 == 1)
+                    {
+                        <div class="row border" style="height: 17%; background-color: rgba(0,0,0,.05);">
+                            <div class="col border-left border-right  border-bottom">@counter</div>
+                            counter++;
+                            @while (counter <= numDays && counter % 7 != 1)
+                            {
+                                <div class="col border-left border-right  border-bottom">@counter</div>
+                                counter++;
+                            }
+                        </div>
+                    }
+                }
+            }
+            @if (startday == "Monday")
+            {
+                @while (counter <= numDays)
+                {
+                    <p>Enters first while</p>
+                    @if (counter % 7 == 1)
+                    {
+                        <p>Enters if</p>
+                        <div class="row border" style="height: 17%; background-color: rgba(0,0,0,.05);">
+                            <div class="col border-left border-right  border-bottom">@counter</div>
+                            counter++;
+                            @while (counter % 7 != 1 && counter <= numDays)
+                            {
+                                <p>Enters second while</p>
+                                <div class="col border-left border-right  border-bottom">@counter</div>
+                                counter++;
+                            }
+                        </div>
+                    }
+                }
+            }
+        }*@
+
+    @*<div class="row border" style="height: 17%; background-color: rgba(0,0,0,.05);">
+            <div class="col border">1</div>
+            <div class="col border">2</div>
+            <div class="col border">3</div>
+            <div class="col border">4</div>
+            <div class="col border">5</div>
+            <div class="col border">6</div>
+            <div class="col border">7</div>
+        </div>
+        <div class="row border" style="height: 17%;">
+            <div class="col border-left border-right  border-bottom">8</div>
+            <div class="col border-left border-right  border-bottom">9</div>
+            <div class="col border-left border-right  border-bottom">10</div>
+            <div class="col border-left border-right  border-bottom">11</div>
+            <div class="col border-left border-right  border-bottom">12</div>
+            <div class="col border-left border-right  border-bottom">13</div>
+            <div class="col border-left border-right  border-bottom">14</div>
+        </div>
+        <div class="row border" style="height: 17%; background-color: rgba(0,0,0,.05);">
+            <div class="col border-left border-right  border-bottom">15</div>
+            <div class="col border-left border-right  border-bottom">16</div>
+            <div class="col border-left border-right  border-bottom">17</div>
+            <div class="col border-left border-right  border-bottom">18</div>
+            <div class="col border-left border-right  border-bottom">19</div>
+            <div class="col border-left border-right  border-bottom">20</div>
+            <div class="col border-left border-right  border-bottom">21</div>
+        </div>
+        <div class="row border" style="height: 17%;">
+            <div class="col border-left border-right  border-bottom">22</div>
+            <div class="col border-left border-right  border-bottom">23</div>
+            <div class="col border-left border-right  border-bottom">24</div>
+            <div class="col border-left border-right  border-bottom">25</div>
+            <div class="col border-left border-right  border-bottom">26</div>
+            <div class="col border-left border-right  border-bottom">27</div>
+            <div class="col border-left border-right  border-bottom">28</div>
+        </div>
+        <div class="row border" style="height: 17%; background-color: rgba(0,0,0,.05);">
+            <div class="col border-left border-right  border-bottom">29</div>
+            <div class="col border-left border-right  border-bottom">30</div>
+            <div class="col border-left border-right  border-bottom">31</div>
+            <div class="col border-left border-right  border-bottom"></div>
+            <div class="col border-left border-right  border-bottom"></div>
+            <div class="col border-left border-right  border-bottom"></div>
+            <div class="col border-left border-right  border-bottom"></div>
+        </div>*@
+
+</div>
+
+
+@code {
+
+    //public IWorkoutRepository repo => Service;
+
+    //public int counter { get; set; }
+    //public DateTime today { get; set; }
+    //public List<Workout> stats { get; set; }
+    //public int month { get; set; }
+    //public int year { get; set; }
+    //public int day = 1;
+    //public string startday { get; set; }
+    //public int numDays { get; set; }
+
+    //protected async override Task OnInitializedAsync()
+    //{
+    //    today = DateTime.Now;
+    //    month = today.Month;
+    //    year = today.Year;
+    //    await UpdateData();
+    //}
+
+    //public async Task UpdateData()
+    //{
+    //    counter = 1;
+    //    stats = await repo.Workouts.ToListAsync();
+    //    startday = new DateTime(year, month, day).DayOfWeek.ToString();
+    //    numDays = DateTime.DaysInMonth(year, month);
+    //}
+
+}

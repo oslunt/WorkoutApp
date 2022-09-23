@@ -1,0 +1,66 @@
+﻿@page "/workouts/exercises/{id:long}"
+@inherits OwningComponentBase<IWorkoutRepository>
+
+<div class="container">
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <td class="col-1"></td>
+                <td><p><span class="font-weight-bold h3">@workout.Name</span> <span class="float-right h6">@day.Name</span> </p></td>
+
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var we in Workout_ExerciseData)
+            {
+                <tr>
+                    <td>@we.ExerciseNum</td>
+
+                    @if (we.Eccentric)
+                    {
+                        <td>
+                            Eccentric @we.Exercise.Name
+                        </td>
+                    }
+                    else
+                    {
+                        <td>@we.Exercise.Name</td>
+                    }
+
+                </tr>
+            }
+        </tbody>
+    </table>
+    <NavLink class="btn btn-success" href="@GetStartUrl(Id)">Start</NavLink>
+    <NavLink class="btn btn-warning float-right" href="@GetEditUrl(Id)">Edit</NavLink>
+    <br /><br />
+</div>
+
+@code {
+
+    [Inject]
+    public IWorkoutRepository repo { get; set; }
+
+    [Parameter]
+    public long Id { get; set; }
+
+    public IEnumerable<Workout_Exercise> Workout_ExerciseData { get; set; }
+    public Workout workout { get; set; }
+    public Day day { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        Workout_ExerciseData = repo.Workout_Exercises
+            .Include(e => e.Exercise)
+            .Where(we => we.WorkoutID == Id)
+            .OrderBy(we => we.ExerciseNum)
+            .ToList();
+        workout = repo.Workouts.First(w => w.WorkoutID == Id);
+        day = repo.Days.First(d => d.DayID == workout.DayID);
+    }
+
+    public string GetEditUrl(long id) => $"/workouts/edit/{id}";
+    public string GetStartUrl(long id) => $"/workouts/{id}/track";
+
+}
